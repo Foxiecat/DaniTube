@@ -1,6 +1,6 @@
 using src.Features.Users.Interfaces;
 
-namespace src.Features.Users;
+namespace src.Features.Users.Entities;
 
 public class Role : IRole
 {

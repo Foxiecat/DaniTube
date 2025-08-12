@@ -2,9 +2,9 @@ namespace src.Features.Users.Interfaces;
 
 public interface IUser
 {
-    Guid Id { get; init; }
-    string Username { get; init; }
-    string HashedPassword { get; init; }
+    Guid Id { get; set; }
+    string Username { get; set; }
+    string HashedPassword { get; set; }
     
     ICollection<IRole> Roles { get; set; }
 }

@@ -6,28 +6,17 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using src.Config;
 using src.Features.Users;
+using src.Features.Users.Entities;
 using src.Features.Users.Interfaces;
+using src.Features.Users.Models;
 using src.Services.Interfaces;
 
 namespace src.Services;
 
 public class TokenService(IOptions<JwtOptions> options) : ITokenService
 {
-    public Task<IUser> LoginAsync(string username, string password)
-    {
-        return Task.FromResult<IUser>(new User
-        {
-            Id = Guid.NewGuid(),
-            Username = username,
-            Roles =
-            [
-                new Role {Id = Guid.NewGuid(), Name = "Admin"},
-                new Role {Id = Guid.NewGuid(), Name = "User"}
-            ]
-        });
-    }
 
-    public Task<string> CreateTokenAsync(IUser user)
+    public string CreateTokenAsync(User user)
     {
         List<Claim> claims =
         [
@@ -39,20 +28,21 @@ public class TokenService(IOptions<JwtOptions> options) : ITokenService
         foreach (IRole role in user.Roles)
             claims.Add(new Claim(ClaimTypes.Role, role.Name!));
 
-        var secrets = Encoding.UTF8.GetBytes(options.Value.Key ?? throw new InvalidOperationException());
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(options.Value.Key));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         SecurityTokenDescriptor tokenDescriptor = new()
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddHours(1),
             Issuer = options.Value.Issuer,
             Audience = options.Value.Audience,
-            SigningCredentials = new SigningCredentials(
-                new SymmetricSecurityKey(secrets), SecurityAlgorithms.HmacSha256Signature)
+            Expires = DateTime.UtcNow.AddDays(1),
+            SigningCredentials = credentials
         };
-        
+
+
         JwtSecurityTokenHandler tokenHandler = new();
         SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
-        return Task.FromResult(tokenHandler.WriteToken(token));
+        return tokenHandler.WriteToken(token);
     }
 
     public (string? userId, IEnumerable<string>? roles) ValidateAccessToken(string accessToken)

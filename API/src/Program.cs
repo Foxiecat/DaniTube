@@ -27,11 +27,11 @@ public class Program
         builder.Services.Configure<JwtOptions>(
             builder.Configuration.GetSection("JWT"));
 
-        builder.Services.AddAuthentication(options =>
+        builder.Services.AddAuthentication(configureOptions =>
         {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            configureOptions.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            configureOptions.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            configureOptions.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
         }).AddJwtBearer(options =>
         {
             var secretInBytes = Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]

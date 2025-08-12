@@ -1,25 +1,26 @@
 using src.Features.Common.Interfaces;
-using src.Features.Users.DTOs;
+using src.Features.Users.Entities;
+using src.Features.Users.Models;
 
 namespace src.Features.Users;
 
-public class UserMapper : IMapper<User, UserResponse>
+public class UserMapper : IMapper<User, UserDto>
 {
-    public UserResponse MapToResponse(User request)
+    public UserDto MapToResponse(User request)
     {
-        return new UserResponse
+        return new UserDto
         {
             Id = request.Id,
             Username = request.Username,
         };
     }
 
-    public User MapToRequest(UserResponse response)
+    public User MapToRequest(UserDto dto)
     {
         return new User
         {
-            Id = response.Id,
-            Username = response.Username,
+            Id = dto.Id,
+            Username = dto.Username,
         };
     }
 }
