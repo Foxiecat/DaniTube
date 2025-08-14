@@ -1,0 +1,38 @@
+services:
+  api:
+    container_name: danitube-api
+    build:
+      context: ./API
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - database
+    networks:
+      - danitube-net
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=danitube-database;Database=danitube;Username=danitube-User;Password=AFakePassw0rd-
+      - JWT__Key=Not_A_Real_Password_Was_Randomly_Generated_For_This_Project_Mosaic_Quantum_Game_Rancidity_Darkish_Darkroom_Dazzling_Swapping1_Spokesman;
+      - JWT__Issuer=https://localhost:7149;
+      - JWT__Audience=https://localhost:7149;
+  
+  database:
+    container_name: danitube-database
+    image: postgres:17.5
+    ports:
+      - "5432:5432"
+    volumes:
+      - danitube-data:/var/lib/postgresql/data
+    networks:
+      - danitube-net
+    environment:
+      - POSTGRES_DB=danitube
+      - POSTGRES_USER=danitube-User
+      - POSTGRES_PASSWORD=AFakePassw0rd-
+
+networks:
+  danitube-net:
+    driver: bridge
+
+volumes:
+  danitube-data:
