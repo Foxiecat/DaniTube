@@ -1,13 +1,9 @@
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
-using src.Config;
+using Serilog;
 using src.Config.Database;
+using src.Extensions;
 using src.Middleware;
-using src.Services;
-using src.Services.Interfaces;
 
 namespace src;
 
@@ -15,59 +11,54 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var builder = WebApplication.CreateBuilder(args);
-
-        // Add services to the container.
-        builder.Services.AddControllers();
-        builder.Services.AddOpenApi();
-
-        builder.Services.AddScoped<ITokenService, TokenService>();
-        builder.Services.AddScoped<JwtMiddleware>();
+        Log.Logger = new LoggerConfiguration().CreateBootstrapLogger();
         
-        builder.Services.Configure<JwtOptions>(
-            builder.Configuration.GetSection("JWT"));
+        try
+        {
+            var builder = WebApplication.CreateBuilder(args);
+            
+            builder.Host.UseSerilog((context, configuration) => 
+                configuration.ReadFrom.Configuration(context.Configuration));
 
-        builder.Services.AddAuthentication(configureOptions =>
-        {
-            configureOptions.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            configureOptions.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            configureOptions.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-        }).AddJwtBearer(options =>
-        {
-            var secretInBytes = Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]
-                                                       ?? throw new NullReferenceException("Missing JWT:Key"));
-            options.TokenValidationParameters = new TokenValidationParameters
+            // Add services to the container.
+            builder.Services.AddControllers();
+            builder.Services.AddOpenApi();
+            
+            builder.Services.AddScopedFeaturesServices();
+
+            builder.Services.AddJwtAuthServices(builder.Configuration);
+
+            builder.Services.AddDbContext<DaniTubeDbContext>(options =>
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            var app = builder.Build();
+
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment())
             {
-                IssuerSigningKey = new SymmetricSecurityKey(secretInBytes),
-                ValidateIssuerSigningKey = true,
-                ValidateIssuer = true,
-                ValidIssuer = builder.Configuration["JWT:Issuer"],
-                ValidateAudience = true,
-                ValidAudience = builder.Configuration["JWT:Audience"],
-            };
-        });
+                app.UseExceptionHandler("/Error");
+                app.MapOpenApi();
+                app.MapScalarApiReference();
+            }
 
-        builder.Services.AddAuthorization();
-        
-        builder.Services.AddDbContext<DaniTubeDbContext>(options =>
-            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+            app.UseHttpsRedirection();
+            app.UseHealthChecks("_/health");
+            app.UseMiddleware<JwtMiddleware>();
+            app.UseAuthorization();
+            app.UseAuthentication();
 
-        var app = builder.Build();
+            app.MapControllers();
 
-        // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
-        {
-            app.MapOpenApi();
-            app.MapScalarApiReference();
+            app.Run();
         }
-
-        app.UseHttpsRedirection();
-        app.UseMiddleware<JwtMiddleware>();
-        app.UseAuthorization();
-        app.UseAuthentication();
-        
-        app.MapControllers();
-
-        app.Run();
+        catch (Exception exception)
+        {
+            Log.Fatal(exception, "Application start-up failed");
+            throw;
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
     }
 }

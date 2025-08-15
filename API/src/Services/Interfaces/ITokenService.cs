@@ -1,5 +1,4 @@
 using src.Features.Users.Entities;
-using src.Features.Users.Interfaces;
 
 namespace src.Services.Interfaces;
 
