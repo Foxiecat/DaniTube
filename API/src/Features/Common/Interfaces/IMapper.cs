@@ -1,7 +1,7 @@
 namespace src.Features.Common.Interfaces;
 
-public interface IMapper<TRequest, TResponse>
+public interface IMapper<TModel, out TResponse, in TRequest>
 {
-    TResponse MapToResponse(TRequest request);
-    TRequest MapToRequest(TResponse response);
+    TResponse MapToResponse(TModel model);
+    TModel MapToModel(TRequest request);
 }
