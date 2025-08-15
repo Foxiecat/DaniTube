@@ -1,0 +1,9 @@
+services:
+  db:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    environment:
+      - POSTGRES_DB=danitube
+      - POSTGRES_USER=danitube-User
+      - POSTGRES_PASSWORD=AFakePassw0rd-
