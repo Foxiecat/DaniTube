@@ -1,14 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using src.Config;
-using src.Features.Users;
 using src.Features.Users.Entities;
 using src.Features.Users.Interfaces;
-using src.Features.Users.Models;
 using src.Services.Interfaces;
 
 namespace src.Services;
