@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace src.Middleware;
 
-public class GlobalExceptionHandler(
+internal sealed class GlobalExceptionHandler(
     IProblemDetailsService problemDetailsService,
     ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
