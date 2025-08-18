@@ -14,7 +14,7 @@ public static class ScopedFeaturesServicesExtension
         // User
         services
             .AddScoped<IUserRepository, UserRepository>()
-            .AddScoped<IUserService, UserService>()
-            .AddScoped<IMapper<User, UserResponse, UserRequest>, UserMapper>();
+            .AddScoped<IUserService, UserService>();
+        //.AddScoped<IMapper<User, UserResponse, UserRequest>, UserMapper>();
     }
 }

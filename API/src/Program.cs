@@ -1,3 +1,4 @@
+using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Serilog;
@@ -16,16 +17,17 @@ public class Program
         try
         {
             var builder = WebApplication.CreateBuilder(args);
+            
+            // Add services to the container.
+            builder.Services.AddControllers();
+            builder.Services.AddFastEndpoints();
+            builder.Services.AddOpenApi();
 
             builder.Services.AddProblemDetails();
             builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
             
             builder.Host.UseSerilog((context, configuration) => 
                 configuration.ReadFrom.Configuration(context.Configuration));
-
-            // Add services to the container.
-            builder.Services.AddControllers();
-            builder.Services.AddOpenApi();
             
             builder.Services.AddScopedFeaturesServices();
 
@@ -55,6 +57,7 @@ public class Program
             app.UseAuthentication();
 
             app.MapControllers();
+            app.UseFastEndpoints();
 
             app.Run();
         }
