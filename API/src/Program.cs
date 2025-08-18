@@ -16,6 +16,9 @@ public class Program
         try
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddProblemDetails();
+            builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
             
             builder.Host.UseSerilog((context, configuration) => 
                 configuration.ReadFrom.Configuration(context.Configuration));
@@ -42,8 +45,12 @@ public class Program
             }
 
             app.UseHttpsRedirection();
+            
+            app.UseExceptionHandler();
             app.UseHealthChecks("_/health");
+            
             app.UseMiddleware<JwtMiddleware>();
+            
             app.UseAuthorization();
             app.UseAuthentication();
 
